@@ -1,0 +1,3 @@
+# Ignore build info artifacts
+/contracts/artifacts/build-info/*
+.env
