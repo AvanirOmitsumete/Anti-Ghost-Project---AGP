@@ -1,0 +1,944 @@
+{
+  "name": "AGP \"Backend\"",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// --- 1. Define Extension Lists ---\nconst VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv', 'wmv', '3gp'];\nconst TEXT_EXTENSIONS = ['txt', 'csv', 'json', 'log', 'md', 'xml', 'js', 'html', 'css'];\nconst IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'tiff', 'ico', 'heif', 'avif'];\nconst DOCUMENT_EXTENSIONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];\n\n// --- 2. Helper Function to Get Extension ---\nfunction getFileExtension(filename) {\n    const lastDotIndex = filename.lastIndexOf('.');\n    if (lastDotIndex === -1 || lastDotIndex === filename.length - 1) {\n        return '';\n    }\n    return filename.substring(lastDotIndex + 1).toLowerCase();\n}\n\n// --- 3. Main Function to Process the n8n Input Array ---\nconst categorizedItems = [];\n\n// n8n function nodes process items one by one in a loop\nfor (const item of $input.all()) {\n    // Check if the item has binary data (which a webhook file upload will)\n    if (item.binary) {\n        const itemJson = item.json;\n        const itemBinary = item.binary;\n\n        // Iterate through all binary files attached to this item (e.g., if multiple files were uploaded)\n        for (const binaryKey in itemBinary) {\n            const binaryObject = itemBinary[binaryKey];\n            \n            // Get the filename from the binary data object\n            const filename = binaryObject.fileName; \n            const extension = getFileExtension(filename);\n            let category = 'Unknown';\n\n            // *** IF-ELSE-IF-ELSE Logic to assign the category ***\n            if (IMAGE_EXTENSIONS.includes(extension)) {\n                category = 'Image';\n            } else if (VIDEO_EXTENSIONS.includes(extension)) {\n                category = 'Video';\n            } else if (TEXT_EXTENSIONS.includes(extension)) {\n                category = 'Text/Code';\n            } else if (DOCUMENT_EXTENSIONS.includes(extension)) {\n                category = 'Document';\n            } else if (extension === 'zip' || extension === 'rar' || extension === '7z') {\n                category = 'Archive';\n            } else if (extension === '') {\n                category = 'No Extension';\n            } else {\n                category = 'Other';\n            }\n\n            // Add the new category property to the item's JSON data\n            // We use the binaryKey (e.g., 'data') to know which file this category belongs to.\n            itemJson[`${binaryKey}_fileCategory`] = category;\n            \n            // Optional: Log to the console for debugging in n8n\n            console.log(`Processed file: ${filename}, Category: ${category}`);\n        }\n        \n        // Push the modified item (with the new category in its JSON) to the output\n        categorizedItems.push(item);\n\n    } else {\n        // Handle items without binary data (e.g., simple form data)\n        categorizedItems.push(item);\n    }\n}\n\nreturn categorizedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        140,
+        160
+      ],
+      "id": "e8079ec0-e75e-4199-a718-b4219ebc0b36",
+      "name": "Code",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.File_fileCategory }}",
+                    "rightValue": "Image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fd27c41f-c6d3-45ec-9c1f-d7ebae83abf3"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "eeea5aac-0e13-4f9f-8590-c081a67db829",
+                    "leftValue": "={{ $json.File_fileCategory }}",
+                    "rightValue": "Text/Code",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3b0f65a5-c6a7-4f10-a716-2ae19c3ea381",
+                    "leftValue": "={{ $json.File_fileCategory }}",
+                    "rightValue": "Document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f57918c7-71ce-4829-b35c-06740f135c73",
+                    "leftValue": "={{ $json.File_fileCategory }}",
+                    "rightValue": "Video",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        360,
+        140
+      ],
+      "id": "c9e5edbd-e49e-4256-97a6-c13c6d2dd548",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the provided image and complete the task outlined below. Your output MUST be formatted for maximum readability and structured for easy data parsing:\nFormatting Rules:\n- Start your response with a $\\text{HEADING}$ summarizing the key result.\n- Use $\\text{BULLET POINTS}$ for all primary findings, details, or steps.\n- $\\text{BOLD}$ all key terms and final conclusions.\n- Conclude the response with a separate, single line providing your confidence score in the strict format: $\\text{CONFIDENCE: } [x/10]$ where $[x]$ is an integer from 1 to 10.\n\nIdentify the image if it is generated by AI or Not: \n{{ $('Switch').item.binary.File.fileName }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -260
+      ],
+      "id": "ddf2feaf-114f-44b2-9947-4defb804e71f",
+      "name": "Image AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the provided image and complete the task outlined below. Your output MUST be formatted for maximum readability and structured for easy data parsing:\nFormatting Rules:\n- Start your response with a $\\text{HEADING}$ summarizing the key result.\n- Use $\\text{BULLET POINTS}$ for all primary findings, details, or steps.\n- $\\text{BOLD}$ all key terms and final conclusions.\n- Conclude the response with a separate, single line providing your confidence score in the strict format: $\\text{CONFIDENCE: } [x/10]$ where $[x]$ is an integer from 1 to 10.\n\nIdentify the Text/Code if it is generated by AI or Not: \n{{ $('Switch').item.binary.File.fileName }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        960,
+        0
+      ],
+      "id": "5641370d-368c-4f84-8d88-8a490a1a8cdf",
+      "name": "Text/Code AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the provided image and complete the task outlined below. Your output MUST be formatted for maximum readability and structured for easy data parsing:\nFormatting Rules:\n- Start your response with a $\\text{HEADING}$ summarizing the key result.\n- Use $\\text{BULLET POINTS}$ for all primary findings, details, or steps.\n- $\\text{BOLD}$ all key terms and final conclusions.\n- Conclude the response with a separate, single line providing your confidence score in the strict format: $\\text{CONFIDENCE: } [x/10]$ where $[x]$ is an integer from 1 to 10.\n\nIdentify the document if it is generated by AI or Not: \n{{ $('Switch').item.binary.File.fileName }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        960,
+        280
+      ],
+      "id": "f2f1e7be-e981-4ed7-a64c-260bb98817a4",
+      "name": "Document AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the provided image and complete the task outlined below. Your output MUST be formatted for maximum readability and structured for easy data parsing:\nFormatting Rules:\n- Start your response with a $\\text{HEADING}$ summarizing the key result.\n- Use $\\text{BULLET POINTS}$ for all primary findings, details, or steps.\n- $\\text{BOLD}$ all key terms and final conclusions.\n- Conclude the response with a separate, single line providing your confidence score in the strict format: $\\text{CONFIDENCE: } [x/10]$ where $[x]$ is an integer from 1 to 10.\n\nIdentify the video if it is generated by AI or Not: \n{{ $('Switch').item.binary.File.fileName }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        960,
+        560
+      ],
+      "id": "3e8874b0-00b4-4255-8275-f2b613e447b9",
+      "name": "Video AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        980,
+        -120
+      ],
+      "id": "bfce920d-45bf-4cf1-8bfe-1e7209197f94",
+      "name": "Image AI Checker",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "5XEYO1tUlnSGXBJV",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        980,
+        140
+      ],
+      "id": "24056cdd-f1de-42a8-82bf-fc6fc6245ff0",
+      "name": "Text/Code AI Checker",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "5XEYO1tUlnSGXBJV",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        980,
+        420
+      ],
+      "id": "00eafb4e-fd51-41d8-97a9-c0ec55ecbdf5",
+      "name": "Document AI Checker",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "5XEYO1tUlnSGXBJV",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        980,
+        720
+      ],
+      "id": "ae9d3028-81af-4bd1-962c-6dc1b212cecf",
+      "name": "Video AI Checker",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "5XEYO1tUlnSGXBJV",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "store",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        160
+      ],
+      "id": "afbed43a-8faf-4d01-b03d-58775e428dc8",
+      "name": "Webhook",
+      "webhookId": "7d14df81-ef1a-488a-9c25-9339b9ea5b07"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://yklkwuotorsvdzyjxqvc.supabase.co/storage/v1/object/image_bucket/{{ $('Switch').item.binary.File.fileName }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "={{ $('Switch').item.binary.File.mimeType }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "File",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -260
+      ],
+      "id": "79a98020-9b1a-4bda-8ffa-6bc82811fcb3",
+      "name": "Image HTTP Request",
+      "credentials": {
+        "supabaseApi": {
+          "id": "E7m8KERv1R7HqOZw",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://yklkwuotorsvdzyjxqvc.supabase.co/storage/v1/object/text_bucket/{{ $('Switch').item.binary.File.fileName }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "={{ $('Switch').item.binary.File.mimeType }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "File",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ],
+      "id": "c8124002-4db3-4f11-87f7-98b5f11d85b4",
+      "name": "Text/Code HTTP Request",
+      "credentials": {
+        "supabaseApi": {
+          "id": "E7m8KERv1R7HqOZw",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://yklkwuotorsvdzyjxqvc.supabase.co/storage/v1/object/document_bucket/{{ $('Switch').item.binary.File.fileName }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "={{ $('Switch').item.binary.File.mimeType }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "File",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        280
+      ],
+      "id": "69e62c74-4fb0-4ce8-9ef7-29f66de82940",
+      "name": "Document HTTP Request",
+      "credentials": {
+        "supabaseApi": {
+          "id": "E7m8KERv1R7HqOZw",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://yklkwuotorsvdzyjxqvc.supabase.co/storage/v1/object/video_bucket/{{ $('Switch').item.binary.File.fileName }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "={{ $('Switch').item.binary.File.mimeType }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "File",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        560
+      ],
+      "id": "08644bfb-da55-4cec-84d4-83b98c52e75e",
+      "name": "Video HTTP Request",
+      "credentials": {
+        "supabaseApi": {
+          "id": "E7m8KERv1R7HqOZw",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "ai_file_registry",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "file_name",
+              "fieldValue": "={{ $('Switch').item.binary.File.fileName }}"
+            },
+            {
+              "fieldId": "file_category",
+              "fieldValue": "={{ $('Switch').item.json.File_fileCategory }}"
+            },
+            {
+              "fieldId": "mime_type",
+              "fieldValue": "={{ $('Switch').item.binary.File.mimeType }}"
+            },
+            {
+              "fieldId": "size_bytes",
+              "fieldValue": "={{ $('Switch').item.binary.File.fileSize }}"
+            },
+            {
+              "fieldId": "storage_bucket",
+              "fieldValue": "image_bucket"
+            },
+            {
+              "fieldId": "storage_path",
+              "fieldValue": "=https://yklkwuotorsvdzyjxqvc.supabase.co/storage/v1/object/{{ $('Image HTTP Request').item.json.Key }}"
+            },
+            {
+              "fieldId": "ai_agent_status",
+              "fieldValue": "Completed"
+            },
+            {
+              "fieldId": "ai_agent_result",
+              "fieldValue": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -260
+      ],
+      "id": "cd165942-593d-4121-a69b-36e4a1dc351f",
+      "name": "Image Path Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "E7m8KERv1R7HqOZw",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "ai_file_registry",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "file_name",
+              "fieldValue": "={{ $('Switch').item.binary.File.fileName }}"
+            },
+            {
+              "fieldId": "file_category",
+              "fieldValue": "={{ $('Switch').item.json.File_fileCategory }}"
+            },
+            {
+              "fieldId": "mime_type",
+              "fieldValue": "={{ $('Switch').item.binary.File.mimeType }}"
+            },
+            {
+              "fieldId": "size_bytes",
+              "fieldValue": "={{ $('Switch').item.binary.File.fileSize }}"
+            },
+            {
+              "fieldId": "storage_bucket",
+              "fieldValue": "text_bucket"
+            },
+            {
+              "fieldId": "storage_path",
+              "fieldValue": "=https://yklkwuotorsvdzyjxqvc.supabase.co/storage/v1/object/{{ $('Text/Code HTTP Request').item.json.Key }}"
+            },
+            {
+              "fieldId": "ai_agent_status",
+              "fieldValue": "Completed"
+            },
+            {
+              "fieldId": "ai_agent_result",
+              "fieldValue": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        0
+      ],
+      "id": "8300c780-4f42-4351-8dc0-2547f376546f",
+      "name": "Text/Code Path Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "E7m8KERv1R7HqOZw",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "ai_file_registry",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "file_name",
+              "fieldValue": "={{ $('Switch').item.binary.File.fileName }}"
+            },
+            {
+              "fieldId": "file_category",
+              "fieldValue": "={{ $('Switch').item.json.File_fileCategory }}"
+            },
+            {
+              "fieldId": "mime_type",
+              "fieldValue": "={{ $('Switch').item.binary.File.mimeType }}"
+            },
+            {
+              "fieldId": "size_bytes",
+              "fieldValue": "={{ $('Switch').item.binary.File.fileSize }}"
+            },
+            {
+              "fieldId": "storage_bucket",
+              "fieldValue": "document_bucket"
+            },
+            {
+              "fieldId": "storage_path",
+              "fieldValue": "=https://yklkwuotorsvdzyjxqvc.supabase.co/storage/v1/object/{{ $('Document HTTP Request').item.json.Key }}"
+            },
+            {
+              "fieldId": "ai_agent_status",
+              "fieldValue": "Completed"
+            },
+            {
+              "fieldId": "ai_agent_result",
+              "fieldValue": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        280
+      ],
+      "id": "47bd5dbc-f8c4-444d-ae19-cbe10f7ccc17",
+      "name": "Document Path Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "E7m8KERv1R7HqOZw",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1080,
+        720
+      ],
+      "id": "8d4bb867-8b11-44f7-98cb-32b80df67a58",
+      "name": "Video Simple Memory"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1080,
+        420
+      ],
+      "id": "112ba880-ef59-4a11-a56c-6ffb1361808e",
+      "name": "Document Simple Memory"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1080,
+        -120
+      ],
+      "id": "dbd28843-6b17-4f12-894b-b9b9f1f96cb7",
+      "name": "Image Simple Memory"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1080,
+        140
+      ],
+      "id": "97cf4818-ea9f-4387-a326-7662f7ecf7af",
+      "name": "Text/Code Simple Memory"
+    },
+    {
+      "parameters": {
+        "tableId": "ai_file_registry",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "file_name",
+              "fieldValue": "={{ $('Switch').item.binary.File.fileName }}"
+            },
+            {
+              "fieldId": "file_category",
+              "fieldValue": "={{ $('Switch').item.json.File_fileCategory }}"
+            },
+            {
+              "fieldId": "mime_type",
+              "fieldValue": "={{ $('Switch').item.binary.File.mimeType }}"
+            },
+            {
+              "fieldId": "size_bytes",
+              "fieldValue": "={{ $('Switch').item.binary.File.fileSize }}"
+            },
+            {
+              "fieldId": "storage_bucket",
+              "fieldValue": "video_bucket"
+            },
+            {
+              "fieldId": "storage_path",
+              "fieldValue": "=https://yklkwuotorsvdzyjxqvc.supabase.co/storage/v1/object/{{ $('Video HTTP Request').item.json.Key }}"
+            },
+            {
+              "fieldId": "ai_agent_status",
+              "fieldValue": "Completed"
+            },
+            {
+              "fieldId": "ai_agent_result",
+              "fieldValue": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        560
+      ],
+      "id": "4e17a1d5-aaeb-4783-bfd9-d4cb85e57378",
+      "name": "Video Path Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "E7m8KERv1R7HqOZw",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Image HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Text/Code HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Document HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Video HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Image Path Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text/Code AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Text/Code Path Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Document Path Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Video Path Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image AI Checker": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Image AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text/Code AI Checker": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text/Code AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document AI Checker": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Document AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video AI Checker": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Video AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Image AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text/Code HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Text/Code AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Document AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Video AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Video AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Document AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Image AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text/Code Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Text/Code AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ead6982b-5a80-45e6-8839-d07ccc08b544",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3c428e2e1d07a857ac9665874278c8675441e409991da2da0fbf604faf19f16d"
+  },
+  "id": "YwdyEZxb6Z3xEvgo",
+  "tags": []
+}
