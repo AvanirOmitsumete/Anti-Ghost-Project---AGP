@@ -1,6 +1,8 @@
 # Ignore build info artifacts
-/contracts/artifacts/build-info/*
+/agp-contracts/artifacts/build-info/*
+/agp-contracts/states
 .states
 artifacts/build-info/*
 node_modules/*
 .env
+hashing/node_modules/*
