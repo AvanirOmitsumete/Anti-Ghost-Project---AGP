@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  n8n:
+    container_name: n8n.v2
+    # Use 'build: .' to tell Docker Compose to use the Dockerfile in the current directory
+    build: . 
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      # CRUCIAL: Must be set to allow n8n's Function nodes to use external npm modules
+      - NODE_FUNCTION_ALLOW_EXTERNAL=*
+      # Recommended: Configure data location
+      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - GENERIC_TIMEZONE=Asia/Singapore
+    volumes:
+      # Creates persistent storage for workflow data and credentials
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:

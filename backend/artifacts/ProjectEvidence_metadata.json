@@ -1,0 +1,197 @@
+{
+	"compiler": {
+		"version": "0.8.30+commit.73712a01"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "evidenceId",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "projectId",
+						"type": "uint256"
+					}
+				],
+				"name": "EvidenceAdded",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_projectId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "_evidenceDataHash",
+						"type": "bytes"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_completionPercentage",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_authenticityScore",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "_authenticatedBy",
+						"type": "string"
+					}
+				],
+				"name": "addEvidence",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_evidenceId",
+						"type": "uint256"
+					}
+				],
+				"name": "getEvidence",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "evidenceId",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "projectId",
+								"type": "uint256"
+							},
+							{
+								"internalType": "bytes",
+								"name": "evidenceDataHash",
+								"type": "bytes"
+							},
+							{
+								"internalType": "uint256",
+								"name": "completionPercentage",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "authenticityScore",
+								"type": "uint256"
+							},
+							{
+								"internalType": "string",
+								"name": "authenticatedBy",
+								"type": "string"
+							},
+							{
+								"internalType": "uint256",
+								"name": "authenticatedOn",
+								"type": "uint256"
+							},
+							{
+								"internalType": "bool",
+								"name": "isValid",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct ProjectEvidence.Evidence",
+						"name": "",
+						"type": "tuple"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"details": "Manages the recording and authentication of project progress evidence. All variables and functions use camelCase for readability, and the contract and struct names use PascalCase, following Solidity naming conventions.",
+			"events": {
+				"EvidenceAdded(uint256,uint256)": {
+					"details": "Emitted when a new piece of project evidence is successfully added.",
+					"params": {
+						"evidenceId": "The unique ID of the new evidence entry.",
+						"projectId": "The ID of the project this evidence belongs to."
+					}
+				}
+			},
+			"kind": "dev",
+			"methods": {
+				"addEvidence(uint256,bytes,uint256,uint256,string)": {
+					"details": "Increments the evidence counter and stores the new data.",
+					"params": {
+						"_authenticatedBy": "The entity that verified the evidence (e.g., wallet address or name).",
+						"_authenticityScore": "The calculated score for the evidence.",
+						"_completionPercentage": "The project's completion status at this point (0-100).",
+						"_evidenceDataHash": "A hash or CID pointing to the evidence image/document.",
+						"_projectId": "The ID of the project the evidence is for."
+					}
+				},
+				"getEvidence(uint256)": {
+					"details": "Uses 'view' because it only reads data, and 'public' for external access.",
+					"params": {
+						"_evidenceId": "The unique ID of the evidence to retrieve."
+					},
+					"returns": {
+						"_0": "The complete Evidence struct."
+					}
+				}
+			},
+			"title": "ProjectEvidence",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"addEvidence(uint256,bytes,uint256,uint256,string)": {
+					"notice": "Adds a new evidence record to the contract storage."
+				},
+				"getEvidence(uint256)": {
+					"notice": "Retrieves the full evidence structure for a given ID."
+				}
+			},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/contracts/projectContracts/projectEvidence.sol": "ProjectEvidence"
+		},
+		"evmVersion": "prague",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/contracts/projectContracts/projectEvidence.sol": {
+			"keccak256": "0x521a08db5a45959853bcf1f538d4c9140849a17e4f1b01f4bb904f500a65bffe",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://9c84c1e4260661ddb27589f3cf9e4c2bac7d66aafdadabeedb2a86deafaa4c22",
+				"dweb:/ipfs/QmemdhgbWhpghqcmZjoxviKtScSSTFs87MM6AX3WTAHKcV"
+			]
+		}
+	},
+	"version": 1
+}
