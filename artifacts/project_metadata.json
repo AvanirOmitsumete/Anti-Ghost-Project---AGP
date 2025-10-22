@@ -1,0 +1,294 @@
+{
+	"compiler": {
+		"version": "0.8.30+commit.73712a01"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_description",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_totalCost",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_budget",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_endDate",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "_document",
+						"type": "bytes"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_importance",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "_overdueLevel",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_createdBy",
+						"type": "string"
+					}
+				],
+				"name": "addProject",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getAllProjects",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "project_id",
+								"type": "uint256"
+							},
+							{
+								"internalType": "string",
+								"name": "project_name",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "project_description",
+								"type": "string"
+							},
+							{
+								"internalType": "uint256",
+								"name": "project_total_cost",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "project_budget",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "project_estimated_end_date",
+								"type": "uint256"
+							},
+							{
+								"internalType": "bytes",
+								"name": "project_document",
+								"type": "bytes"
+							},
+							{
+								"internalType": "uint256",
+								"name": "importance_level",
+								"type": "uint256"
+							},
+							{
+								"internalType": "string",
+								"name": "overdue_level",
+								"type": "string"
+							},
+							{
+								"internalType": "uint256",
+								"name": "created_on",
+								"type": "uint256"
+							},
+							{
+								"internalType": "string",
+								"name": "created_by",
+								"type": "string"
+							},
+							{
+								"internalType": "bool",
+								"name": "is_finished",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct project.ProjectStruc[]",
+						"name": "",
+						"type": "tuple[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_id",
+						"type": "uint256"
+					}
+				],
+				"name": "getProject",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "project_id",
+								"type": "uint256"
+							},
+							{
+								"internalType": "string",
+								"name": "project_name",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "project_description",
+								"type": "string"
+							},
+							{
+								"internalType": "uint256",
+								"name": "project_total_cost",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "project_budget",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "project_estimated_end_date",
+								"type": "uint256"
+							},
+							{
+								"internalType": "bytes",
+								"name": "project_document",
+								"type": "bytes"
+							},
+							{
+								"internalType": "uint256",
+								"name": "importance_level",
+								"type": "uint256"
+							},
+							{
+								"internalType": "string",
+								"name": "overdue_level",
+								"type": "string"
+							},
+							{
+								"internalType": "uint256",
+								"name": "created_on",
+								"type": "uint256"
+							},
+							{
+								"internalType": "string",
+								"name": "created_by",
+								"type": "string"
+							},
+							{
+								"internalType": "bool",
+								"name": "is_finished",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct project.ProjectStruc",
+						"name": "",
+						"type": "tuple"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {
+				"addProject(string,string,uint256,uint256,uint256,bytes,uint256,string,string)": {
+					"details": "All required fields are validated to ensure they have non-zero or non-empty values.",
+					"params": {
+						"_budget": "The allocated budget.",
+						"_createdBy": "The user/entity creating the project.",
+						"_description": "The project's description.",
+						"_document": "A byte array representing project document data (e.g., a hash or IPFS URI).",
+						"_endDate": "The estimated end date (Unix timestamp).",
+						"_importance": "The importance level (e.g., 1-5).",
+						"_name": "The project's name.",
+						"_overdueLevel": "The overdue status (e.g., \"On-Time\", \"Slightly\", \"Critical\").",
+						"_totalCost": "The total cost incurred so far."
+					}
+				},
+				"getAllProjects()": {
+					"details": "Iterates over the array of project IDs to fetch all ProjectStruc objects.",
+					"returns": {
+						"_0": "An array of ProjectStruc containing all projects."
+					}
+				},
+				"getProject(uint256)": {
+					"params": {
+						"_id": "The unique ID of the project to retrieve."
+					},
+					"returns": {
+						"_0": "A tuple containing all fields of the ProjectStruc."
+					}
+				}
+			},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"addProject(string,string,uint256,uint256,uint256,bytes,uint256,string,string)": {
+					"notice": "Adds a new project to the contract storage."
+				},
+				"getAllProjects()": {
+					"notice": "Retrieves all projects stored in the contract."
+				},
+				"getProject(uint256)": {
+					"notice": "Retrieves the details of a single project by its ID."
+				}
+			},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/contracts/projectContracts/project.sol": "project"
+		},
+		"evmVersion": "prague",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/contracts/projectContracts/project.sol": {
+			"keccak256": "0xed2ca56fc5e88195d3bf7d1198fae90455c66c9c571094896fdf7acd9ced7e05",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://927360c8918c5a48580b5ea3d524715987643169bedf7d95dd57af033083d879",
+				"dweb:/ipfs/QmReqL4nrLKVKEqxJGWa2pfP6emhG1c9A42T4PSLNwa1M5"
+			]
+		}
+	},
+	"version": 1
+}
