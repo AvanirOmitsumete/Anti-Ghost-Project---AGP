@@ -1,22 +1,28 @@
-🌟 Project Title
-Anti-Ghost-Project (AGP)
+# Anti-Ghost-Project (AGP) 🌟
 
-🚀 Overview
-The project aim to implement web 3 ethereum(sol) contracts for immutability of transactions and records of non-government and government projects. Uses n8n for no-code and automation through using in built nodes from n8n to validate and automate form checking of raw data(images, videos, audio, text) and storing them inside the database.
+## Overview 🚀
+The Anti-Ghost-Project (AGP) implements Web3 Ethereum smart contracts to ensure immutability of government and non-government project transactions and records. It leverages n8n for no-code automation, utilizing built-in nodes to validate and automate form checking of raw data (images, videos, audio, text) before storing them in the database.
 
-The goal main of the project aims to make guests(citizens) aware of upcoming/ongoing/overdue projects.
+**Main Goal**: Increase transparency by keeping citizens informed about upcoming, ongoing, and overdue projects.
 
-✨ Features
-List the main functionalities or selling points of your project.
+## Features ✨
 
-Feature 1: Verification of raw data using AI and has a authenticity rate of 0-10, if < 3 it will be discard, if below < 9 the raw data will be authenticated by a human.
+### 1. AI-Powered Data Verification
+- Authenticates raw data using AI with a 0-10 authenticity rating
+- Ratings < 3: Data is discarded
+- Ratings < 9: Data requires human authentication
+- Ratings ≥ 9: Data is automatically authenticated
 
-Feature 2: Minting of data transactions and raw data of authenticated projects
+### 2. Blockchain Integration
+- Mints authenticated project data and transactions
+- Ensures immutability through Ethereum smart contracts
 
-Feature 3: If A project is near-overdue/overdue the system will send a email to notify government/assigned project personels.
+### 3. Automated Notifications
+- Email alerts for near-overdue/overdue projects
+- Notifications sent to government officials and project personnel
 
-🗺️ Directory Structure
-Directory Structure
+## Directory Structure 🗺️
+```
 .
 ├── .docker-compose.yml
 ├── .env
@@ -28,72 +34,76 @@ Directory Structure
 │   ├── .deps/
 │   ├── .states/
 │   ├── artifacts/
-│   │   └── build-info
 │   ├── contracts/
 │   ├── scripts/
 │   └── tests/
 ├── artifacts/
-│   └── build-info
 ├── dockerfile
 ├── hashing/
 └── n8n/
+```
 
-Folder Breakdown (The City Districts)
-⚙️ Installation
-This is the assembly manual—how a user gets the project running on their local machine.
+## Installation ⚙️
 
-#Prerequisites
-Node.js (version 18+)
-docker-desktop
-Remix-IDE
+### Prerequisites
+- Node.js (v18+)
+- Docker Desktop
+- Remix IDE (for contract compilation & deployment)
+- Crypto Wallet (MetaMask or Infura-supported alternatives)
+- Infura Account
+  - API Key
+  - Project ID
+- Gemini API Key
+- Supabase Account
+  - Secret Key/Anon Key
+  - Host URL: `https://SUPABASE_ID.supabase.co`
+  - Storage Buckets ([Setup Guide](https://supabase.com/docs/guides/storage/buckets/fundamentals))
 
-Steps
-Clone the repository: 
+### Setup Steps
+
+1. **Clone the repository**
+```bash
 git clone https://github.com/AvanirOmitsumete/Anti-Ghost-Project---AGP.git
+```
 
-Install dependencies:
+2. **Install dependencies**
+```bash
 npm install
+```
 
-Deploy and Rebuild Docker:
-1. Stop any existing n8n container running from your old setup:
+3. **Deploy and Rebuild Docker**
+```bash
+# Stop existing n8n container
 docker compose down
 
-2. Build and Deploy the new container:
+# Build and deploy new container
 docker compose up -d --build
+```
 
-How to Run the Project:
+### Project Startup
 1. Run Docker Image
 2. Run Docker Container
 3. Run Docker Create Workflow
-4. Import AGP_Backend_.json
-5. Add all necessary API credentials & empty code blocks
-6. 
+4. Import `AGP_Backend_.json`
+5. Configure API credentials
+6. Execute Triggers
 
-🚦 Usage
-The quick start guide—how to actually run and interact with the application once it's set up.
+## Usage 🚦
 
-Starting the Application
-To run the application in development mode:
+### Accessing the Application
+- TODO MEL and KENT (In Development)
 
-The application should now be accessible at http://localhost:3000.
+### Documentation & Testing 📚
+- n8n Webhooks available for testing
+- Backend testing via Test URLs
 
-API Endpoints (For Backend Projects)
-📚 Documentation & Testing
-Link to any extensive, external documentation and briefly explain how to run tests.
+## Future Enhancements 🔮
+- KENT J. TODO LIST (In Development)
 
-Running Tests
-To execute the full test suite and view coverage:
+## Contributing 🤝
+We welcome contributions! Please review our contribution guidelines before submitting pull requests.
 
-External Docs
-For detailed API definitions and usage examples, see our dedicated documentation website: [Link to Docs Site]
+## API Documentation
+For detailed API documentation and examples, visit our [documentation website][docs-link].
 
-🤝 Contributing
-We welcome contributions! Please review these documents before submitting a pull request.
-
-
-
-📝 License
-This project is licensed under the [LICENSE NAME] License - see the file for details.
-
-📞 Contact
-Project Maintainer: [Your Name] - [Your Email/GitHub Profile]
+[docs-link]: # "Documentation link to be added"
