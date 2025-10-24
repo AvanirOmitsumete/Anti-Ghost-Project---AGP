@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { authService } from '@/services/auth' // Import authService
+import Toast from '@/components/global/Toast.vue' // Import Toast
 
 const router = useRouter()
+const toastRef = ref<InstanceType<typeof Toast> | null>(null) // Toast ref
 
 const Header = defineAsyncComponent(() => import('@/components/global/Header.vue'))
 const Footer = defineAsyncComponent(() => import('@/components/global/Footer.vue'))
@@ -18,7 +21,7 @@ const hasTriedSubmit = ref(false)
 const emailErrorMessage = computed(() => {
   if (email.value.length === 0)
     return 'Email is required'
-  const emailRegex = /^[^S@]+@[^S@][^S@.]*\.[^S@]+$/
+  const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/
   if (!emailRegex.test(email.value))
     return 'Please enter a valid email address'
   return ''
@@ -27,12 +30,9 @@ const emailErrorMessage = computed(() => {
 const passwordErrorMessage = computed(() => {
   if (!password.value)
     return 'Password is required'
-  if (password.value.length < 8)
-    return 'Password must be at least 8 characters'
-  if (!/\d/.test(password.value))
-    return 'Password must contain at least 1 number'
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(password.value))
-    return 'Password must contain at least 1 special character'
+  // Supabase default password policy is 6 characters
+  if (password.value.length < 6)
+    return 'Password must be at least 6 characters'
   return ''
 })
 
@@ -44,6 +44,10 @@ const confirmPasswordErrorMessage = computed(() => {
   return ''
 })
 
+const isFormValid = computed(() => {
+  return emailErrorMessage.value === '' && passwordErrorMessage.value === '' && confirmPasswordErrorMessage.value === ''
+})
+
 const shouldShowEmailError = computed(() => hasTriedSubmit.value && !!emailErrorMessage.value)
 const shouldShowPasswordError = computed(() => hasTriedSubmit.value && !!passwordErrorMessage.value)
 const shouldShowConfirmPasswordError = computed(() => hasTriedSubmit.value && !!confirmPasswordErrorMessage.value)
@@ -51,25 +55,33 @@ const shouldShowConfirmPasswordError = computed(() => hasTriedSubmit.value && !!
 // Input classes
 function inputClass(hasError: boolean) {
   return hasError
-    ? 'w-full px-3 py-2 pr-16 rounded focus:outline-none focus:ring-2 border-2 border-red-500 focus:ring-500'
+    ? 'w-full px-3 py-2 pr-16 rounded focus:outline-none focus:ring-2 border-2 border-red-500 focus:ring-red-500'
     : 'w-full px-3 py-2 pr-16 rounded focus:outline-none focus:ring-2 border border-gray-300 focus:ring-blue-500'
 }
 
 async function handleRegister() {
   hasTriedSubmit.value = true
-  if (emailErrorMessage.value || passwordErrorMessage.value || confirmPasswordErrorMessage.value) {
-    return // just show validation errors
+  if (!isFormValid.value) {
+    toastRef.value?.triggerToast('Please correct the form errors.', 'error')
+    return
   }
 
-  // Mock registration success
-  alert('Registration successful! Redirecting to login.')
-  router.push('/login')
+  try {
+    await authService.signUp(email.value, password.value)
+    if (import.meta.env.MODE === 'development') {
+      console.warn('Registration successful!')
+    }
+    toastRef.value?.triggerToast('Registration successful! Please check your email for confirmation.', 'success')
+    router.push('/login')
+  }
+  catch (err: any) {
+    console.error('Registration error:', err)
+    const msg = err.message || 'Registration failed. Please try again.'
+    toastRef.value?.triggerToast(msg, 'error')
+  }
 }
 
-function handleGoogleRegister() {
-  alert('Google registration initiated (placeholder).')
-  // In a real app, this would initiate Google OAuth flow
-}
+// Removed handleGoogleRegister as it's not directly part of basic Supabase email/password auth
 </script>
 
 <template>
@@ -83,19 +95,12 @@ function handleGoogleRegister() {
         class="w-full max-w-md bg-white shadow-[0_0_30px_rgba(0,0,0,0.1)] rounded-md flex flex-col items-center p-6 space-y-6"
       >
         <!-- Logo -->
-        <div class="w-24 h-24 flex justify-center items-center">
-          <img src="/images/logo2.jpg" alt="ACLC Shield" class="object-contain h-full w-full">
+        <div class="w-40 h-40 flex justify-center items-center">
+          <img src="/images/easter/crocs.png" alt="ACLC Shield" class="object-contain h-full w-full">
         </div>
 
         <!-- Form -->
         <div class="w-full space-y-4">
-          <h2 class="text-lg font-semibold text-gray-800 text-center">
-            Register
-          </h2>
-          <p class="text-sm text-gray-600 text-center">
-            Create your account.
-          </p>
-
           <!-- Email -->
           <div>
             <input
@@ -171,14 +176,7 @@ function handleGoogleRegister() {
             Register
           </button>
 
-          <!-- Google Button -->
-          <button
-            class="w-full flex items-center justify-center bg-red-600 text-white font-bold py-2 rounded hover:bg-red-700 transition"
-            @click="handleGoogleRegister"
-          >
-            <img src="/images/google_logo.png" alt="Google Logo" class="h-5 w-5 mr-2">
-            Register with Google
-          </button>
+          <!-- Removed Google Button -->
 
           <!-- Back to Login -->
           <div class="text-center">
@@ -192,5 +190,9 @@ function handleGoogleRegister() {
 
     <!-- Footer -->
     <Footer />
+    <div>
+      <!-- Toast -->
+      <Toast ref="toastRef" />
+    </div>
   </div>
 </template>

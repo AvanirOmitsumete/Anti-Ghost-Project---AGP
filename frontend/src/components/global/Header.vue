@@ -1,13 +1,45 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { authService } from '@/services/auth'
 
+const router = useRouter()
 const isOpen = ref(false)
-const isLoggedIn = ref(false) // Simulate login state
+const isLoggedIn = ref(false)
 
-// Function to toggle login state for demonstration
-function toggleLogin() {
-  isLoggedIn.value = !isLoggedIn.value
+async function checkLoginStatus() {
+  try {
+    const session = await authService.getSession()
+    isLoggedIn.value = !!session
+  }
+  catch (error) {
+    console.error('Error checking login status:', error)
+    isLoggedIn.value = false
+  }
 }
+
+async function handleLogout() {
+  try {
+    await authService.signOut()
+    isLoggedIn.value = false
+    router.push('/login')
+  }
+  catch (error) {
+    console.error('Error during logout:', error)
+  }
+}
+
+onMounted(() => {
+  checkLoginStatus()
+  // Listen for auth state changes from Supabase
+  authService.onAuthStateChange((event, session) => {
+    isLoggedIn.value = !!session
+    if (!session && router.currentRoute.value.meta.requiresAuth) {
+      // If user logs out or session expires and they are on a protected route
+      router.push('/login')
+    }
+  })
+})
 </script>
 
 <template>
@@ -31,29 +63,8 @@ function toggleLogin() {
           <a href="/project-tracker" class="text-white hover:text-cyan-400 uppercase font-medium tracking-wider">Track Projects</a>
           <a href="/about-us" class="text-white hover:text-cyan-400 uppercase font-medium tracking-wider">About Us</a>
           <a v-if="!isLoggedIn" href="/login" class="text-white hover:text-cyan-400 uppercase font-medium tracking-wider">Login</a>
-          <a v-else href="#" class="text-white hover:text-cyan-400 uppercase font-medium tracking-wider" @click.prevent="toggleLogin">Logout</a>
+          <a v-else href="#" class="text-white hover:text-cyan-400 uppercase font-medium tracking-wider" @click.prevent="handleLogout">Logout</a>
         </div>
-
-        <!-- Mobile Menu Button -->
-        <div class="md:hidden flex items-center">
-          <button type="button" class="text-gray-300 hover:text-white focus:outline-none focus:text-white" @click="isOpen = !isOpen">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path v-if="!isOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-              <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mobile Menu -->
-    <div v-if="isOpen" class="md:hidden">
-      <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-        <a href="/home" class="text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium">Home</a>
-        <a href="/project-tracker" class="text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium">Track Projects</a>
-        <a href="/about-us" class="text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium">About Us</a>
-        <a v-if="!isLoggedIn" href="/login" class="text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium">Login</a>
-        <a v-else href="#" class="text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium" @click.prevent="toggleLogin">Logout</a>
       </div>
     </div>
   </nav>

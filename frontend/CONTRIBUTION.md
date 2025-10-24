@@ -1,6 +1,6 @@
-# Contributing to Lab System Frontend
+# Contributing to Anti-Ghost Project
 
-Welcome to the Lab System Frontend project! This guide will help you get started with Vue 3 development, especially if you're new to the framework.
+Welcome to the Anti-Ghost Project project! This guide will help you get started with Vue 3 development, especially if you're new to the framework.
 
 ## Table of Contents
 

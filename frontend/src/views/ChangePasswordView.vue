@@ -18,12 +18,8 @@ const hasTriedSubmit = ref(false)
 const passwordErrorMessage = computed(() => {
   if (!password.value)
     return 'Password is required'
-  if (password.value.length < 8)
-    return 'Password must be at least 8 characters'
-  if (!/\d/.test(password.value))
-    return 'Password must contain at least 1 number'
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password.value))
-    return 'Password must contain at least 1 special character'
+  if (password.value.length < 6)
+    return 'Password must be at least 6 characters'
   return ''
 })
 

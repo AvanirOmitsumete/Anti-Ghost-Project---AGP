@@ -1,18 +1,35 @@
 <script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, ref, onMounted } from 'vue'
+import Sidebar from '@/components/global/Sidebar.vue'
+import { authService } from '@/services/auth'
 
 const Header = defineAsyncComponent(() => import('@/components/global/Header.vue'))
 const Footer = defineAsyncComponent(() => import('@/components/global/Footer.vue'))
 
+const isSidebarOpen = ref(false)
+const isLoggedIn = ref(false)
+
+function toggleSidebar() {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
+
+onMounted(() => {
+  authService.getSession().then(session => {
+    isLoggedIn.value = !!session;
+  });
+  authService.onAuthStateChange((event, session) => {
+    isLoggedIn.value = !!session;
+  });
+});
+
 // Dummy data for team members
 const teamMembers = [
-  { name: 'Alice Johnson', role: 'CEO & Founder', image: 'https://via.placeholder.com/150/FF5733/FFFFFF?text=AJ' },
-  { name: 'Bob Williams', role: 'Lead Developer', image: 'https://via.placeholder.com/150/33FF57/FFFFFF?text=BW' },
-  { name: 'Charlie Brown', role: 'Marketing Director', image: 'https://via.placeholder.com/150/3357FF/FFFFFF?text=CB' },
-  { name: 'Diana Prince', role: 'Product Manager', image: 'https://via.placeholder.com/150/FFFF33/000000?text=DP' },
+  { name: 'Kent Jay D. Otadoy', role: 'The Architect', image: 'images/about/ken.png' },
+  { name: 'Manuel M. Cando', role: 'BlockChain Developer', image: 'images/about/man.png' },
+  { name: 'Melecio Andre S. Cabahug', role: 'Backend Developer', image: 'images/about/mel.png' },
+  { name: 'Rodnel Quilantang', role: 'Frontend Developer', image: 'images/about/rod.png' },
 ]
 
-// Dummy data for values
 const values = [
   { title: 'Innovation', description: 'Continuously pushing boundaries with cutting-edge technology.' },
   { title: 'Integrity', description: 'Upholding the highest standards of honesty and ethical conduct.' },
@@ -24,9 +41,17 @@ const values = [
 <template>
   <div class="min-h-screen bg-white flex flex-col">
     <Header />
-    <main class="flex-1 py-16 px-4 bg-gray-50">
+    <main class="flex-1 py-16 px-4 bg-gray-50 pt-16">
+      <button v-if="isLoggedIn" class="absolute top-4 left-4 z-50 p-2 focus:outline-none rounded-md text-white" @click="toggleSidebar">
+        <svg class="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <Sidebar v-if="isLoggedIn" :is-open="isSidebarOpen" @close="toggleSidebar" />
       <div class="max-w-6xl mx-auto">
-        <h1 class="text-4xl font-bold text-gray-900 text-center mb-12">About BlockTrack</h1>
+        <h1 class="text-4xl font-bold text-gray-900 text-center mb-12">
+          About BlockTrack
+        </h1>
 
         <!-- Introduction -->
         <section class="mb-16 text-center">
@@ -37,10 +62,12 @@ const values = [
 
         <!-- Our Mission -->
         <section class="mb-16">
-          <h2 class="text-3xl font-semibold text-gray-800 text-center mb-8">Our Mission</h2>
+          <h2 class="text-3xl font-semibold text-gray-800 text-center mb-8">
+            Our Mission
+          </h2>
           <div class="flex flex-col md:flex-row items-center md:space-x-8">
             <div class="md:w-1/2 mb-6 md:mb-0">
-              <img src="https://via.placeholder.com/600x400/A0A0A0/FFFFFF?text=Our+Mission" alt="Our Mission" class="rounded-lg shadow-lg">
+              <img src="/images/about/four.jpg" alt="Our Mission" class="rounded-lg shadow-lg">
             </div>
             <div class="md:w-1/2 text-lg text-gray-700 leading-relaxed">
               <p class="mb-4">
@@ -55,22 +82,30 @@ const values = [
 
         <!-- What We Do -->
         <section class="mb-16">
-          <h2 class="text-3xl font-semibold text-gray-800 text-center mb-8">What We Do</h2>
+          <h2 class="text-3xl font-semibold text-gray-800 text-center mb-8">
+            What We Do
+          </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div class="bg-white p-6 rounded-lg shadow-md">
-              <h3 class="text-xl font-bold text-gray-900 mb-3">Secure Project Tracking</h3>
+              <h3 class="text-xl font-bold text-gray-900 mb-3">
+                Secure Project Tracking
+              </h3>
               <p class="text-gray-700">
                 Utilize blockchain to create an unalterable record of project progress, tasks, and deliverables.
               </p>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-md">
-              <h3 class="text-xl font-bold text-gray-900 mb-3">Transparent Asset Management</h3>
+              <h3 class="text-xl font-bold text-gray-900 mb-3">
+                Transparent Asset Management
+              </h3>
               <p class="text-gray-700">
                 Track physical and digital assets with complete visibility and an auditable trail.
               </p>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-md">
-              <h3 class="text-xl font-bold text-gray-900 mb-3">Decentralized Collaboration</h3>
+              <h3 class="text-xl font-bold text-gray-900 mb-3">
+                Decentralized Collaboration
+              </h3>
               <p class="text-gray-700">
                 Enable secure and efficient collaboration among multiple parties without intermediaries.
               </p>
@@ -80,23 +115,35 @@ const values = [
 
         <!-- Our Values -->
         <section class="mb-16">
-          <h2 class="text-3xl font-semibold text-gray-800 text-center mb-8">Our Values</h2>
+          <h2 class="text-3xl font-semibold text-gray-800 text-center mb-8">
+            Our Values
+          </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div v-for="value in values" :key="value.title" class="bg-white p-6 rounded-lg shadow-md text-center">
-              <h3 class="text-xl font-bold text-gray-900 mb-3">{{ value.title }}</h3>
-              <p class="text-gray-700">{{ value.description }}</p>
+              <h3 class="text-xl font-bold text-gray-900 mb-3">
+                {{ value.title }}
+              </h3>
+              <p class="text-gray-700">
+                {{ value.description }}
+              </p>
             </div>
           </div>
         </section>
 
         <!-- Our Team -->
         <section class="mb-16">
-          <h2 class="text-3xl font-semibold text-gray-800 text-center mb-8">Our Team</h2>
+          <h2 class="text-3xl font-semibold text-gray-800 text-center mb-8">
+            Our Team
+          </h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             <div v-for="member in teamMembers" :key="member.name" class="text-center">
               <img :src="member.image" :alt="member.name" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 shadow-md">
-              <h3 class="text-xl font-semibold text-gray-900">{{ member.name }}</h3>
-              <p class="text-blue-600">{{ member.role }}</p>
+              <h3 class="text-xl font-semibold text-gray-900">
+                {{ member.name }}
+              </h3>
+              <p class="text-blue-600">
+                {{ member.role }}
+              </p>
             </div>
           </div>
         </section>

@@ -1,4 +1,4 @@
-# Lab System Frontend
+# Anti-Ghost Project
 
 A modern Vue 3 application for laboratory management built with TypeScript and Vue
 
@@ -76,7 +76,7 @@ The application uses environment variables for configuration:
 
 ```env
 VITE_API_BASE_URL=http://localhost:3000/api
-VITE_APP_NAME=Lab System Frontend
+VITE_APP_NAME=Anti-Ghost Project
 VITE_DEV_MODE=true
 ```
 
