@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { isAxiosError } from 'axios'
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '@/boot/axios'
 import Toast from '@/components/global/Toast.vue'
+import { authService } from '@/services/auth' // Import authService
 
 const router = useRouter()
 const toastRef = ref<InstanceType<typeof Toast> | null>(null)
@@ -11,16 +10,16 @@ const toastRef = ref<InstanceType<typeof Toast> | null>(null)
 const Header = defineAsyncComponent(() => import('@/components/global/Header.vue'))
 const Footer = defineAsyncComponent(() => import('@/components/global/Footer.vue'))
 
-const username = ref('')
+const email = ref('') // Changed from username to email
 const password = ref('')
 const rememberMe = ref(false)
 const showPassword = ref(false) // Toggle state
 const hasTriedSubmit = ref(false)
 
-const formattedUsername = computed({
-  get: () => username.value,
+const formattedEmail = computed({
+  get: () => email.value,
   set: (newValue) => {
-    username.value = newValue.replace(/\s/g, '').slice(0, 20)
+    email.value = newValue.replace(/\s/g, '').slice(0, 50) // Adjusted length for email
   },
 })
 
@@ -35,40 +34,39 @@ function togglePasswordVisibility() {
   showPassword.value = !showPassword.value
 }
 
-// Validation rules/messages
-const usernameErrorMessage = computed<string>(() => {
-  if (username.value.length === 0)
-    return 'Username is required'
+// Validation rules/messages for email
+const emailErrorMessage = computed<string>(() => {
+  if (email.value.length === 0)
+    return 'Email is required'
+  if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email.value))
+    return 'Please enter a valid email address'
   return ''
 })
 
 const passwordErrorMessage = computed<string>(() => {
   if (password.value.length === 0)
     return 'Password is required'
-  if (password.value.length < 8)
-    return 'Password must be at least 8 characters'
-  if (!/\d/.test(password.value))
-    return 'Password must contain at least 1 number'
-  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password.value))
-    return 'Password must contain at least 1 special character'
+  // Supabase default password policy is 6 characters, but it's good practice to enforce stronger client-side validation
+  if (password.value.length < 6)
+    return 'Password must be at least 6 characters'
   return ''
 })
 
 const isFormValid = computed<boolean>(() => {
-  return usernameErrorMessage.value === '' && passwordErrorMessage.value === ''
+  return emailErrorMessage.value === '' && passwordErrorMessage.value === ''
 })
 
 // Computed properties for template logic
-const shouldShowUsernameError = computed<boolean>(() => {
-  return (hasTriedSubmit.value && !!usernameErrorMessage.value) || (!!username.value && !!usernameErrorMessage.value)
+const shouldShowEmailError = computed<boolean>(() => {
+  return (hasTriedSubmit.value && !!emailErrorMessage.value) || (!!email.value && !!emailErrorMessage.value)
 })
 
 const shouldShowPasswordError = computed<boolean>(() => {
   return (hasTriedSubmit.value && !!passwordErrorMessage.value) || (!!password.value && !!passwordErrorMessage.value)
 })
 
-const usernameInputClasses = computed<string>(() => {
-  return shouldShowUsernameError.value
+const emailInputClasses = computed<string>(() => {
+  return shouldShowEmailError.value
     ? 'w-full px-3 py-2 rounded focus:outline-none focus:ring-2 border-2 border-red-500 focus:ring-red-500'
     : 'w-full px-3 py-2 rounded focus:outline-none focus:ring-2 border border-gray-300 focus:ring-blue-500'
 })
@@ -79,42 +77,24 @@ const passwordInputClasses = computed<string>(() => {
     : 'w-full px-3 py-2 rounded focus:outline-none focus:ring-2 pr-16 border border-gray-300 focus:ring-blue-500'
 })
 
-// Add API call here in real implementation
 async function handleLogin() {
   hasTriedSubmit.value = true
-  if (!isFormValid.value)
+  if (!isFormValid.value) {
+    toastRef.value?.triggerToast('Please correct the form errors.', 'error')
     return
+  }
 
   try {
-    const response = await api.post(
-      '/auth/login',
-      {
-        username: username.value,
-        password: password.value,
-        rememberMe: rememberMe.value,
-      },
-      {
-        withCredentials: true,
-      },
-    )
+    await authService.signIn(email.value, password.value)
     if (import.meta.env.MODE === 'development') {
-      console.warn('Login successful!', response.data)
+      console.warn('Login successful!')
     }
     router.push('/dashboard')
   }
-  catch (err) {
-    if (isAxiosError(err)) {
-      if (!err.response) {
-        toastRef.value?.triggerToast('Network error. Please check your connection.', 'error')
-      }
-      else {
-        const msg = err.response?.data?.message ?? 'Login failed. Please try again.'
-        toastRef.value?.triggerToast(msg, 'error')
-      }
-    }
-    else {
-      toastRef.value?.triggerToast('An unexpected error occurred.', 'error')
-    }
+  catch (err: any) {
+    console.error('Login error:', err)
+    const msg = err.message || 'Login failed. Please check your credentials.'
+    toastRef.value?.triggerToast(msg, 'error')
   }
 }
 </script>
@@ -128,28 +108,28 @@ async function handleLogin() {
     <main class="flex-1 flex items-center justify-center p-4 bg-gray-50 pt-16">
       <div class="w-full max-w-md bg-white shadow-[0_0_30px_rgba(0,0,0,0.1)] rounded-md flex flex-col items-center p-6 space-y-6">
         <!-- Logo -->
-        <div class="w-24 h-24 flex justify-center items-center">
-          <img src="/images/croc.png" alt="ACLC Shield" class="object-contain h-full w-full">
+        <div class="w-40 h-40 flex justify-center items-center">
+          <img src="/images/easter/crocs.png" alt="ACLC Shield" class="object-contain h-full w-full">
         </div>
 
         <!-- Login Form -->
         <div class="w-full space-y-4">
-          <!-- Username -->
+          <!-- Email -->
           <div>
             <input
-              v-model="formattedUsername"
-              type="text"
-              placeholder="Username"
-              :class="usernameInputClasses"
-              :aria-invalid="shouldShowUsernameError"
-              aria-describedby="username-error"
+              v-model="formattedEmail"
+              type="email"
+              placeholder="Email"
+              :class="emailInputClasses"
+              :aria-invalid="shouldShowEmailError"
+              aria-describedby="email-error"
             >
             <p
-              v-if="shouldShowUsernameError"
-              id="username-error"
+              v-if="shouldShowEmailError"
+              id="email-error"
               class="mt-1 text-sm text-red-600"
             >
-              {{ usernameErrorMessage }}
+              {{ emailErrorMessage }}
             </p>
           </div>
 
