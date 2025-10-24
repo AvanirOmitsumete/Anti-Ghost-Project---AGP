@@ -26,6 +26,7 @@ The Anti-Ghost-Project (AGP) is a blockchain-based system designed to bring tran
 - **Automation**: n8n
 - **Database**: Supabase (PostgreSQL)
 - **Backend**: Node.js, Express
+- **Frontend**: Vue 3, TypeScript, Pinia, Vite
 - **Libraries**: Ethers.js, Web3.js
 
 ## Directory Structure 🗺️
@@ -45,16 +46,22 @@ The Anti-Ghost-Project (AGP) is a blockchain-based system designed to bring tran
 │   │   └── db_schema.sql
 │   ├── hashing/
 │   └── n8n/
-└── ...
+└── frontend/
+    ├── src/
+    ├── public/
+    └── ...
 ```
 
 ## Prerequisites
 - Node.js (v18+)
+- pnpm (for frontend)
 - Docker Desktop
 - A crypto wallet (e.g., MetaMask)
 - An Infura account and Project ID
 - A Gemini API Key
 - A Supabase account and project
+- VSCode with Volar extension (recommended for frontend)
+
 
 ## Installation & Setup ⚙️
 
@@ -65,8 +72,11 @@ The Anti-Ghost-Project (AGP) is a blockchain-based system designed to bring tran
    ```
 
 2. **Set up environment variables:**
-   - Create a `.env` file by copying the `.env.example`.
+   - Create a `.env` file in the root directory by copying `.env.example`.
    - Fill in the required credentials for Supabase, Infura, Gemini, and your Ethereum wallet.
+   - Create a `.env` file in the `frontend` directory by copying `frontend/.env.example`.
+   - Edit `frontend/.env` with your API configuration.
+
 
 3. **Install backend dependencies:**
    ```bash
@@ -75,7 +85,14 @@ The Anti-Ghost-Project (AGP) is a blockchain-based system designed to bring tran
    cd ../../
    ```
 
-4. **Deploy with Docker:**
+4. **Install frontend dependencies:**
+    ```bash
+    cd frontend
+    pnpm install
+    cd ../
+    ```
+
+5. **Deploy with Docker (for backend services):**
    ```bash
    # Stop any existing containers
    docker compose down
@@ -84,11 +101,49 @@ The Anti-Ghost-Project (AGP) is a blockchain-based system designed to bring tran
    docker compose up -d --build
    ```
 
-## Usage 🚦
-The application is primarily operated through n8n workflows, which handle data validation, processing, and notifications.
+## Usage & Development 🚦
 
-- **Accessing the Application**: The frontend for this project is still under development.
-- **Testing**: The backend can be tested using the n8n webhook URLs and Test URLs.
+### Backend
+The backend application is primarily operated through n8n workflows, which handle data validation, processing, and notifications. The backend can be tested using the n8n webhook URLs and Test URLs.
+
+### Frontend
+To start the frontend development server:
+```bash
+cd frontend
+pnpm dev
+```
+The application will be available at `http://localhost:5173`.
+
+#### Frontend Scripts
+```bash
+# Development
+pnpm dev              # Start development server with hot reload
+pnpm build            # Build for production
+pnpm preview          # Preview production build locally
+
+# Code Quality
+pnpm lint             # Run ESLint
+pnpm lint:fix         # Fix ESLint issues automatically
+pnpm type-check       # Run TypeScript type checking
+
+# Testing
+pnpm test:unit        # Run unit tests with Vitest
+```
+
+#### Frontend Project Structure
+```
+frontend/src/
+├── components/       # Reusable Vue components
+│   ├── icons/       # SVG icon components
+│   └── __tests__/   # Component tests
+├── views/           # Page-level components (routes)
+├── router/          # Vue Router configuration
+├── stores/          # Pinia state management
+├── services/        # API services and HTTP client
+├── boot/            # App initialization (Axios setup)
+├── utils/           # Utility functions
+└── assets/          # CSS and static assets
+```
 
 ## Smart Contracts 📝
 The core logic of the AGP system is encapsulated in three main smart contracts:
@@ -113,7 +168,7 @@ We welcome contributions to the Anti-Ghost-Project! To contribute, please follow
 6. **Push your branch** to your forked repository.
 7. **Create a pull request** to the `main` branch of the original repository.
 
-Please make sure your pull request is well-documented and explains the changes you have made.
+Please make sure your pull request is well-documented and explains the changes you have made. For detailed frontend development guidelines, see `frontend/CONTRIBUTION.md`.
 
 ## Future Possible Enhancements 🔮
 - Implement more advanced AI models for data verification.
