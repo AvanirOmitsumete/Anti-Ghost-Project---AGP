@@ -30,6 +30,12 @@ export const authService = {
     return data.session
   },
 
+  async getUser() {
+    const { data, error } = await supabase.auth.getUser()
+    if (error) throw error
+    return data.user
+  },
+
   onAuthStateChange(callback: (event: string, session: any | null) => void) {
     return supabase.auth.onAuthStateChange(callback)
   },

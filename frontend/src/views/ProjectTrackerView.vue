@@ -4,6 +4,7 @@ import ReportModal from '@/components/modals/ReportModal.vue'
 import SubmissionSuccessModal from '@/components/modals/SubmissionSuccessModal.vue'
 import Sidebar from '@/components/global/Sidebar.vue'
 import { authService } from '@/services/auth'
+import axios from 'axios'
 
 const Header = defineAsyncComponent(() => import('@/components/global/Header.vue'))
 const Footer = defineAsyncComponent(() => import('@/components/global/Footer.vue'))
@@ -15,6 +16,40 @@ function toggleSidebar() {
   isSidebarOpen.value = !isSidebarOpen.value
 }
 
+const showReportModal = ref(false)
+const showSuccessModal = ref(false)
+const submittedReportType = ref('')
+const selectedProject = ref<{ id: number, name: string } | null>(null)
+const searchQuery = ref('')
+
+const projects = ref<any[]>([])
+
+async function fetchProjects() {
+  try {
+    const response = await axios.get('http://13.229.247.66/webhook/get-projects');
+    console.log('API Response:', response.data);
+
+    // Handle both single object and array of objects
+    const projectsData = Array.isArray(response.data) ? response.data : [response.data];
+
+    const formattedProjects = [
+      {
+        category: 'Projects',
+        items: projectsData.map(project => ({
+          id: project.project_id,
+          name: project.name,
+          percentage: 0, // Placeholder
+          status: project.is_finished ? 'Completed' : 'Ongoing',
+        })),
+      },
+    ];
+
+    projects.value = formattedProjects;
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+  }
+}
+
 onMounted(() => {
   authService.getSession().then(session => {
     isLoggedIn.value = !!session;
@@ -22,42 +57,10 @@ onMounted(() => {
   authService.onAuthStateChange((event, session) => {
     isLoggedIn.value = !!session;
   });
+  fetchProjects();
 });
 
-const showReportModal = ref(false)
-const showSuccessModal = ref(false)
-const submittedReportType = ref('')
-const selectedProject = ref<{ id: number, name: string } | null>(null)
 
-const searchQuery = ref('')
-
-// Dummy project data
-const projects = ref([
-  {
-    category: 'Water Resources & Flood Control',
-    items: [
-      { id: 1, name: 'New Centennial Source - Kaliwa Dam Project', percentage: 75, status: 'Ongoing' },
-      { id: 2, name: 'Pasig-Marikina River Flood Control Project', percentage: 90, status: 'Near Completion' },
-      { id: 3, name: 'Angat Dam Rehabilitation', percentage: 50, status: 'Ongoing' },
-    ],
-  },
-  {
-    category: 'Transportation Infrastructure',
-    items: [
-      { id: 4, name: 'Metro Manila Subway Project', percentage: 30, status: 'Ongoing' },
-      { id: 5, name: 'North-South Commuter Railway', percentage: 60, status: 'Ongoing' },
-      { id: 6, name: 'Cebu-Cordova Link Expressway', percentage: 100, status: 'Completed' },
-    ],
-  },
-  {
-    category: 'Energy Development',
-    items: [
-      { id: 7, name: 'Bataan Nuclear Power Plant Rehabilitation', percentage: 5, status: 'Planning' },
-      { id: 8, name: 'Solar Farm Expansion Project', percentage: 40, status: 'Ongoing' },
-      { id: 9, name: 'Rural Electrification Project', percentage: 20, status: 'No Update' },
-    ],
-  },
-])
 
 const filteredProjects = computed(() => {
   if (!searchQuery.value) {
