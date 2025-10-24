@@ -13,7 +13,7 @@ USER root
 # STEP 2: Install Custom NPM Packages (Crucial for Function nodes)
 # Replace 'package-name-1' and 'package-name-2' with the libraries you need.
 # Example: RUN npm install -g node-fetch ethers
-RUN npm install -g ethers node-fetch fs path crypto dotenv
+RUN npm install -g ethers node-fetch dotenv crypto express cors nodemailer
 
 # ----------------------------------------------------------------------------------
 

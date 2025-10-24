@@ -1,4 +1,3 @@
-// Add this line at the top of your script
 const fetch = require("node-fetch");
 const { ethers } = require("ethers");
 const fs = require("fs");
@@ -6,8 +5,8 @@ const path = require("path");
 const crypto = require("crypto");
 require("dotenv").config();
 
-// Function to hash a file using a stream
-function hashFileWithStream(filePath) {
+// Function to hash a local file using a stream
+function hashLocalFileWithStream(filePath) {
   return new Promise((resolve, reject) => {
     const hash = crypto.createHash("sha256");
     const stream = fs.createReadStream(filePath);
@@ -17,11 +16,27 @@ function hashFileWithStream(filePath) {
   });
 }
 
-async function generateProofTx() {
-  const [imagePath] = process.argv.slice(2);
+// Function to hash content from a URL
+async function hashUrlContent(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch URL: ${response.statusText}`);
+    }
+    const buffer = await response.buffer(); // Get content as a Buffer
+    const hash = crypto.createHash("sha256");
+    hash.update(buffer);
+    return hash.digest("hex");
+  } catch (error) {
+    throw new Error(`Error hashing URL content: ${error.message}`);
+  }
+}
 
-  if (!imagePath) {
-    console.error("Usage: node generateProofTx_webhook.js <path_to_file>");
+async function generateProofTx() {
+  const [inputPath] = process.argv.slice(2);
+
+  if (!inputPath) {
+    console.error("Usage: node generateSignedTransactions.js <local_file_path_or_image_url>");
     process.exit(1);
   }
 
@@ -30,32 +45,41 @@ async function generateProofTx() {
     process.exit(1);
   }
 
-  if (!fs.existsSync(imagePath)) {
-    console.error(`Error: File not found at ${imagePath}`);
-    process.exit(1);
+  let contentHash;
+  let isUrl = inputPath.startsWith('http://') || inputPath.startsWith('https://');
+
+  if (isUrl) {
+    console.log(`Hashing content from URL: ${inputPath}`);
+    contentHash = "0x" + (await hashUrlContent(inputPath));
+  } else {
+    if (!fs.existsSync(inputPath)) {
+      console.error(`Error: File not found at ${inputPath}`);
+      process.exit(1);
+    }
+    console.log(`Hashing content from local file: ${inputPath}`);
+    contentHash = "0x" + (await hashLocalFileWithStream(path.resolve(__dirname, inputPath)));
   }
 
   const provider = new ethers.InfuraProvider("sepolia", process.env.INFURA_PROJECT_ID);
   const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
   try {
-    const network = await provider.getNetwork(); // ✅ Fetch network info
-    const chainId = network.chainId; // ✅ Automatically get Sepolia chain ID (11155111)
+    const network = await provider.getNetwork();
+    const chainId = network.chainId;
 
-    const imageHash = "0x" + (await hashFileWithStream(path.resolve(__dirname, imagePath)));
-    const signature = await signer.signMessage(ethers.getBytes(imageHash));
+    const signature = await signer.signMessage(ethers.getBytes(contentHash));
     const nonce = await provider.getTransactionCount(signer.address);
 
-    // Combine hash + signature as payload data
-    const transactionData = imageHash + signature.substring(2);
+    // Combine hash + signature as payload data (this data will be sent in the transaction)
+    const transactionData = contentHash + signature.substring(2);
 
     const transaction = {
-      to: signer.address,
+      to: signer.address, // Sending to self for proof of existence
       value: ethers.parseEther("0"),
       nonce,
       type: 2,
-      chainId, // ✅ REQUIRED for EIP-2718
-      gasLimit: 60000,
+      chainId,
+      gasLimit: 60000, // Adjust as needed
       maxPriorityFeePerGas: ethers.parseUnits("1", "gwei"),
       maxFeePerGas: ethers.parseUnits("50", "gwei"),
       data: transactionData,
@@ -63,30 +87,34 @@ async function generateProofTx() {
 
     const signedTx = await signer.signTransaction(transaction);
 
-    // --- Post the payload to the n8n webhook ---
-    const webhookUrl = process.env.WEBSOCKET_URL;
-    const payload = {
-      filePath: imagePath,
-      fileHash: imageHash,
-      signature,
-      signedTx,
+    // --- Send the signed transaction to Infura via JSON-RPC ---
+    const infuraUrl = `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`;
+    const jsonRpcPayload = {
+      jsonrpc: "2.0",
+      method: "eth_sendRawTransaction",
+      params: [signedTx],
+      id: 1,
     };
 
-    console.log(`Sending payload to webhook: ${webhookUrl}`);
+    console.log(`Sending raw transaction to Infura: ${infuraUrl}`);
 
-    const response = await fetch(webhookUrl, {
+    const response = await fetch(infuraUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(jsonRpcPayload),
     });
 
-    if (response.ok) {
-      console.log("Webhook triggered successfully!");
+    const result = await response.json();
+
+    if (response.ok && result.result) {
+      console.log("Transaction sent successfully!");
+      console.log("Transaction Hash:", result.result);
     } else {
-      console.error(`Error triggering webhook: ${response.status} - ${response.statusText}`);
+      console.error(`Error sending transaction: ${response.status} - ${response.statusText}`);
+      console.error("Infura Response:", result);
     }
   } catch (error) {
-    console.error("Error in transaction generation:", error);
+    console.error("Error in transaction generation or sending:", error);
     process.exit(1);
   }
 }

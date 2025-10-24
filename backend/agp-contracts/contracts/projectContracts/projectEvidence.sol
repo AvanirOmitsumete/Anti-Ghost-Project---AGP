@@ -22,7 +22,6 @@ contract ProjectEvidence {
         uint256 evidenceId;
         uint256 projectId;
         // Data hash or IPFS CID related to the image/document evidence.
-        // Using bytes is more efficient than a full image file.
         bytes evidenceDataHash;
         uint256 completionPercentage;
         uint256 authenticityScore;
@@ -39,6 +38,10 @@ contract ProjectEvidence {
     // Mapping from the unique evidence ID to the Evidence struct.
     mapping(uint256 => Evidence) private idToEvidence;
 
+    // Mapping to retrieve all evidence IDs for a specific project.
+    mapping(uint256 => uint256[]) private projectToEvidenceIds;
+
+
     // --- EVENTS ---
 
     /**
@@ -47,6 +50,7 @@ contract ProjectEvidence {
      * @param projectId The ID of the project this evidence belongs to.
      */
     event EvidenceAdded(uint256 evidenceId, uint256 projectId);
+
 
     // --- FUNCTIONS ---
 
@@ -66,10 +70,8 @@ contract ProjectEvidence {
         uint256 _authenticityScore,
         string memory _authenticatedBy
     ) public {
-        // Use the current counter value as the new ID
         uint256 newId = nextEvidenceId;
 
-        // Store the new evidence structure in the mapping
         idToEvidence[newId] = Evidence({
             evidenceId: newId,
             projectId: _projectId,
@@ -77,14 +79,13 @@ contract ProjectEvidence {
             completionPercentage: _completionPercentage,
             authenticityScore: _authenticityScore,
             authenticatedBy: _authenticatedBy,
-            authenticatedOn: block.timestamp, // Use the current block timestamp
+            authenticatedOn: block.timestamp,
             isValid: true
         });
 
-        // Increment the counter for the next entry
+        projectToEvidenceIds[_projectId].push(newId);
         nextEvidenceId++;
 
-        // Emit an event for off-chain listeners
         emit EvidenceAdded(newId, _projectId);
     }
 
@@ -99,8 +100,19 @@ contract ProjectEvidence {
         view
         returns (Evidence memory)
     {
-        // Simple return from the mapping.
-        // If the ID does not exist, Solidity returns a struct with default values (0, "", false).
         return idToEvidence[_evidenceId];
+    }
+
+    /**
+     * @notice Retrieves all evidence IDs for a given project.
+     * @param _projectId The ID of the project.
+     * @return An array of evidence IDs.
+     */
+    function getAllEvidenceForProject(uint256 _projectId)
+        public
+        view
+        returns (uint256[] memory)
+    {
+        return projectToEvidenceIds[_projectId];
     }
 }
