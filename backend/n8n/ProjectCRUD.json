@@ -1,0 +1,314 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "projects"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -336
+      ],
+      "id": "033aa7cf-5dc4-45c8-bbe1-4420a34aff0c",
+      "name": "Get many rows",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zS1pUqSyyDo51UC8",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "get-projects",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -176,
+        -336
+      ],
+      "id": "a0197896-0d7e-475d-90ca-c7a4737366e7",
+      "name": "Get Many",
+      "webhookId": "78afd7ef-5732-43c7-a998-b3a9379210a9"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "projects",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "name",
+              "keyValue": "={{ $json.body.project_name }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -64
+      ],
+      "id": "6293548f-2b67-409a-9694-259ed707def2",
+      "name": "Get a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zS1pUqSyyDo51UC8",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "get-project",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -176,
+        -64
+      ],
+      "id": "1ecda5a6-460d-4990-b3fe-2bbffd0cc524",
+      "name": "Get One",
+      "webhookId": "997bea87-fa04-4ad8-9968-cb23f5b55707"
+    },
+    {
+      "parameters": {
+        "tableId": "projects",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $json.body.project_name }}"
+            },
+            {
+              "fieldId": "starting_date",
+              "fieldValue": "={{ $json.body.starting_date }}"
+            },
+            {
+              "fieldId": "estimated_end_date",
+              "fieldValue": "={{ $json.body.estimated_end_date }}"
+            },
+            {
+              "fieldId": "created_by",
+              "fieldValue": "={{ $json.body.uuid }}"
+            },
+            {
+              "fieldId": "total_cost",
+              "fieldValue": "={{ $json.body.project_money }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "={{ $json.body.project_description }}"
+            },
+            {
+              "fieldId": "importance_level",
+              "fieldValue": "={{ $json.body.importance_level }}"
+            },
+            {
+              "fieldId": "overdue_level",
+              "fieldValue": "1"
+            },
+            {
+              "fieldId": "created_by",
+              "fieldValue": "={{ $json.body.uuid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        32,
+        272
+      ],
+      "id": "959812ab-f1c9-4ee9-b49d-df6cea79d4c2",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zS1pUqSyyDo51UC8",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Get Request \nWEBHOOK URL:\nhttp://13.229.247.66/webhook-test/get-project\n```\n{\n    \"project_name\": \"croco\"\n}\n```",
+        "height": 192,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "ae16faae-8b7a-438f-935d-86d8d9a03a06",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://13.229.247.66/webhook-test/ai-file-validator",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "File",
+              "inputDataFieldName": "File"
+            },
+            {
+              "name": "project_id",
+              "value": "={{ $('Webhook Project File').item.json.project_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        32,
+        592
+      ],
+      "id": "732cbc41-e2ce-45d3-909a-86c9d86bf667",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "create-project-data",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        272
+      ],
+      "id": "2c0ac1a8-9150-4b5a-b8bd-d38cd23a0205",
+      "name": "Webhook Project Data",
+      "webhookId": "27cff4d7-fe4b-41e0-9b14-ed3840a1c4df"
+    },
+    {
+      "parameters": {
+        "path": "project-file",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        592
+      ],
+      "id": "ac46e9a1-cb72-4434-8df6-6d0c612aa09e",
+      "name": "Webhook Project File",
+      "webhookId": "d03cccc9-1cca-495b-964a-1fa2ef118eb3"
+    },
+    {
+      "parameters": {
+        "content": "## Post Request Project Format\n\nWEBHOOK URL:\nhttp://13.229.247.66/webhook/create-project-data\n\n```\n{\n    \"project_name\": \"croco\",\n    \"project_description\": \"\",\n    \"project_money\": \"\",\n    \"starting_date\": \"dd,mm,yyyy\",\n    \"estemated_end_date\": \"dd,mm,yyyy\",\n    \"project_documentation\": \"binari\",\n    \"importance_level\": 1,\n    \"user_uuid\": \"basta id dapog karn\"\n}\n```",
+        "height": 352,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "0dc69373-a808-4fe0-bc72-f4a699d073b4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Post Request AI Validator Format\n\nWEBHOOK URL:\nhttp://13.229.247.66/webhook/project-file\n\nform-data\n```\nFile = File\nproject_id = project_id\n```",
+        "height": 224,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "ceba8223-e4b4-49a0-8767-c16f75537840",
+      "name": "Sticky Note2"
+    }
+  ],
+  "connections": {
+    "Get Many": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get One": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook Project Data": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Project File": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bf192a9d61ad75486e7c11d38b123fd376a41cc106f1238a193619361a1ce84f"
+  }
+}

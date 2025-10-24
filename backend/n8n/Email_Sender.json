@@ -1,0 +1,140 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "email-sender",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {
+          "allowedOrigins": "*",
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        -384
+      ],
+      "id": "0e5d9fe0-7eea-4bdc-a5ec-96a8b21b643d",
+      "name": "Webhook",
+      "webhookId": "215aef52-0e38-4ffc-bedc-65eee28600ce"
+    },
+    {
+      "parameters": {
+        "content": "## Post Request Format\n\nWEBHOOK URL: http://13.229.247.66/webhook/email-sender\n```\n{\n    \"recipient_gmail\": \"sample@email.com\",\n    \"message\": \"sample message\",\n    \"subject\": \"sample subject\"\n}\n```",
+        "height": 224,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -256,
+        -432
+      ],
+      "typeVersion": 1,
+      "id": "1cb91c74-a44f-4a09-9ee6-6bccf43b5051",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## .ENV\n\nGMAIL_USER = \"sample@gmail.com\"\n\nGMAIL_APP_PASSWORD = \"abcd edfg hijk lmno\"",
+        "height": 144,
+        "width": 352
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -560
+      ],
+      "typeVersion": 1,
+      "id": "12e1d2af-1b82-49ea-b714-77c19d116ef7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fd6f6336-ec40-4953-be83-1c501f41f0bf",
+              "name": "GMAIL_USER",
+              "value": "{{ credentials.gmail.username }}@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "595790e1-adeb-458b-8ff4-e42b959da30f",
+              "name": "GMAIL_APP_PASSWORD",
+              "value": "{{ credentials.gmail.app_password }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        -384
+      ],
+      "id": "8c1bc6f7-31a6-4457-84bf-9d1b43984257",
+      "name": "ENV"
+    },
+    {
+      "parameters": {
+        "content": "## Success Output\n\n```\n[\n  {\n    \"status\": \"success\",\n    \"message\": \"Email sent successfully!\",\n    \"messageId\": \"<messageId@gmail.com>\",\n    \"recipient\": \"recipient@gmail.com\"\n  }\n]\n```",
+        "height": 256,
+        "width": 528
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        896,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "f7ce4251-f780-4b4f-ad30-a80af623342f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Function to send an email using Nodemailer based on input data\nasync function sendEmailFromN8n() {\n    // 1. --- Extract Data and Credentials ---\n    \n    // The credentials from the 'Edit Fields' (or Set) node are merged into the input.\n    // Assuming the Edit Fields node uses keys like 'GMAIL_USER' and 'GMAIL_APP_PASSWORD'\n    const GMAIL_USER = $input.first().json.GMAIL_USER;\n    const GMAIL_APP_PASSWORD = $input.first().json.GMAIL_APP_PASSWORD;\n    \n    // Data from the Webhook payload (or another node)\n    // Assuming the webhook sends 'recipient_gmail', 'subject' and 'message'\n    const recipient = $('Webhook').first().json.body.recipient_gmail;\n    const message = $('Webhook').first().json.body.message;\n    const subject = $('Webhook').first().json.body.subject;\n  \n    // Set standard sender. Customize as needed.\n    const sender = GMAIL_USER;\n\n    // Basic validation\n    if (!GMAIL_USER || !GMAIL_APP_PASSWORD || !recipient || !message) {\n        console.error(\"Missing required fields for email or credentials.\");\n        return [{ json: { status: 'error', message: 'Missing credentials or recipient/message data.' } }];\n    }\n\n    // 2. --- Configure Nodemailer Transporter ---\n    // NOTE: Nodemailer is available globally in the n8n runtime environment.\n    const nodemailer = require('nodemailer');\n\n    const transporter = nodemailer.createTransport({\n        service: 'gmail', \n        auth: {\n            user: GMAIL_USER, \n            pass: GMAIL_APP_PASSWORD, \n        },\n    });\n\n    // 3. --- Define Mail Options ---\n    const mailOptions = {\n        from: sender, \n        to: recipient, \n        subject: subject,\n        text: message,\n        html: `<p>${message}</p>`, // Simple HTML body\n    };\n\n    // 4. --- Send Email and Handle Response ---\n    try {\n        const info = await transporter.sendMail(mailOptions);\n        console.log('Message sent: %s', info.messageId);\n        \n        // Return a successful response as an array of objects\n        return [{ \n            json: { \n                status: 'success', \n                message: 'Email sent successfully!', \n                messageId: info.messageId,\n                recipient: recipient \n            } \n        }];\n    } catch (error) {\n        console.error('Nodemailer error:', error);\n        \n        // Return an error response as an array of objects\n        return [{ \n            json: { \n                status: 'error', \n                message: 'Failed to send email on the server.',\n                details: error.message \n            } \n        }];\n    }\n}\n\n// Execute the async function. The Code node handles the promise resolution.\nreturn sendEmailFromN8n();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -384
+      ],
+      "id": "31731533-754b-4dd1-93e3-129f76014842",
+      "name": "Custom Mail Sender in JS"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "ENV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENV": {
+      "main": [
+        [
+          {
+            "node": "Custom Mail Sender in JS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "bf192a9d61ad75486e7c11d38b123fd376a41cc106f1238a193619361a1ce84f"
+  }
+}

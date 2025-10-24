@@ -1,24 +1,47 @@
 version: '3.8'
 
 services:
-  n8n:
+  n8n: # Your existing n8n service
     container_name: n8n.v2
-    # Use 'build: .' to tell Docker Compose to use the Dockerfile in the current directory
-    build: . 
+    build: . # Uses your Dockerfile
+    restart: always
+    # IMPORTANT: Remove or comment out the 'ports' section for n8n.
+    # Nginx will handle external access, n8n only needs to be accessible inside Docker.
+    # ports:
+    #   - "5678:5678"
+    environment:
+      - NODE_FUNCTION_ALLOW_EXTERNAL=*
+      - NODE_FUNCTION_ALLOW_BUILTIN=*
+      - NODE_ENV=production
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      # N8N_PORT is still needed internally
+      - N8N_PORT=5678
+      # N8N_HOST is now the service name, how Nginx finds it
+      - N8N_HOST=n8n
+      # N8N_PROTOCOL remains http for internal communication
+      - N8N_PROTOCOL=http
+      - GENERIC_TIMEZONE=Asia/Manila # Correct timezone for Lapu-Lapu
+      # Important: Tell n8n it's behind a proxy
+      - N8N_TRUST_PROXY=true
+      - N8N_EDITOR_BASE_URL=http://13.229.247.66/
+      - N8N_SECURE_COOKIE=false
+      - WEBHOOK_URL=http://13.229.247.66/
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./local-files:/files
+
+  nginx: # New Nginx service
+    image: nginx:latest # Use the official Nginx image
+    container_name: nginx_proxy
     restart: always
     ports:
-      - "5678:5678"
-    environment:
-      # CRUCIAL: Must be set to allow n8n's Function nodes to use external npm modules
-      - NODE_FUNCTION_ALLOW_EXTERNAL=*
-      # Recommended: Configure data location
-      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
-      - N8N_PORT=5678
-      - N8N_PROTOCOL=http
-      - GENERIC_TIMEZONE=Asia/Singapore
+      # Map EC2 instance's port 80 to Nginx container's port 80
+      - "80:80"
     volumes:
-      # Creates persistent storage for workflow data and credentials
-      - n8n_data:/home/node/.n8n
+      # Mount the Nginx configuration file you created
+      - ./nginx-conf/nginx.conf:/etc/nginx/conf.d/default.conf:ro # Read-only mount
+    depends_on:
+      - n8n # Make sure n8n starts before Nginx tries to connect
 
 volumes:
   n8n_data:

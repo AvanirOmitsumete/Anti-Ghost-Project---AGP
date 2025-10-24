@@ -1,8 +1,16 @@
 # Ignore build info artifacts
+artifacts/*
 backend/agp-contracts/artifacts/build-info/*
 backend/agp-contracts/states
-backend/artifacts/build-info/*
-backend/node_modules/*
-backend/hashing/node_modules/*
+backend/agp-contracts/.deps/*
+backend/artifacts/*
+
+# IDE files
+.idea/
+
+# Node modules
+/node_modules
+backend/hashing/node_modules
+
 .states
 .env
