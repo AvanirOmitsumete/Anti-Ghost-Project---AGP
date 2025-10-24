@@ -2,9 +2,15 @@
 artifacts/*
 backend/agp-contracts/artifacts/build-info/*
 backend/agp-contracts/states
+backend/agp-contracts/.deps/*
 backend/artifacts/*
-backend/node_modules/*
-backend/hashing/node_modules/*
+
+# IDE files
+.idea/
+
+# Node modules
+/node_modules
+backend/hashing/node_modules
 
 .states
 .env
